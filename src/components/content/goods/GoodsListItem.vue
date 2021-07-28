@@ -25,7 +25,7 @@
 
 <style scoped>
   .goods {
-    padding-bottom: 40px;
+    padding:2px 2px 40px 2px;
     position: relative;
     width: 48%;
   }
@@ -42,7 +42,6 @@
     right: 0;
     overflow: hidden;
     text-align: center;
-    z-index: 9;
   }
 
   .goods-info p {
