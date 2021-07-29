@@ -4,7 +4,10 @@
       <div slot="center">购物街</div>
     </nav-bar>
 
-    <scroll class="content" ref="scroll">
+    <scroll class="content" ref="scroll"
+            :probe-type="3"
+            @scroll="contentscroll"
+            :pull-up-load="true" @pullingUp="loadMore">
       <home-swiper :banners="banners"></home-swiper>
       <recommend-view :recommends="recommends"></recommend-view>
       <feature-view></feature-view>
@@ -13,7 +16,7 @@
       <goods-list :goods="showGoods"></goods-list>
     </scroll>
 
-    <back-top @click.native="backClick"></back-top>
+    <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
 
   </div>
 
@@ -32,8 +35,6 @@
   import BackTop from "../../components/content/backTop/BackTop";
 
   import {getHomeMultidata, getHomeData} from "network/home";
-
-
 
 
   export default {
@@ -58,10 +59,11 @@
           'sell': {page: 0, list: []}
         },
         currentType: 'pop',
+        isShowBackTop: false,
       }
     },
-    computed:{
-      showGoods(){
+    computed: {
+      showGoods() {
         return this.goods[this.currentType].list;
       }
     },
@@ -72,6 +74,14 @@
       this.getHomeProducts('pop')
       this.getHomeProducts('new')
       this.getHomeProducts('sell')
+
+    },
+    mounted() {
+      // 3.监听item中图片加载完成
+
+      this.$bus.$on('itemImageLoad',()=>{
+        this.$refs.scroll.refresh()
+      })
     },
     methods: {
       // 事件监听相关方法
@@ -88,8 +98,18 @@
             break;
         }
       },
-      backClick(){
-        this.$refs.scroll.scrollTo(0,0,500);
+      backClick() {
+        this.$refs.scroll.scrollTo(0, 0, 500);
+      },
+      contentscroll(position) {
+        if (-position.y > 1000) {
+          this.isShowBackTop = true;
+        } else {
+          this.isShowBackTop = false;
+        }
+      },
+      loadMore(){
+        this.getHomeProducts(this.currentType)
       },
       // 网络请求相关方法
       getHomeMultidata() {
@@ -98,11 +118,14 @@
           this.recommends = res.data.recommend.list;
         })
       },
+
       getHomeProducts(type) {
         getHomeData(type, this.goods[type].page + 1).then(res => {
           const goodsList = res.data.list;
           this.goods[type].list.push(...goodsList);
           this.goods[type].page += 1;
+
+          this.$refs.scroll.finishpullUp();
         })
       }
     }
@@ -131,6 +154,7 @@
     top: 44px;
     z-index: 9;
   }
+
   .content {
     /*height: calc(100% - 93px);*/
     /*overflow: hidden;*/
