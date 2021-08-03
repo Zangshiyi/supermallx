@@ -41,6 +41,7 @@
 
   import {getHomeMultidata, getHomeData} from "network/home";
   import {debounce} from "../../common/utils";
+  import {itemListenerMixin} from "../../common/mixin";
 
 
   export default {
@@ -55,6 +56,7 @@
       Scroll,
       BackTop,
     },
+    mixins:[itemListenerMixin],
     data() {
       return {
         banners: [],
@@ -68,7 +70,8 @@
         isShowBackTop: false,
         tabOffsetTop: 0,
         isTabFixed: false,
-        saveY:0,
+        saveY: 0,
+
       }
     },
     computed: {
@@ -78,12 +81,15 @@
     },
     activated() {
       this.$refs.scroll.refresh();
-      this.$refs.scroll.scrollTo(0,this.saveY,0);
+      this.$refs.scroll.scrollTo(0, this.saveY, 0);
 
     }
     ,
     deactivated() {
+      // 1.保存Y值
       this.saveY = this.$refs.scroll.getScrollY();
+      // 2.取消全局事件监听
+      this.$bus.$off('itemImageLoad',this.itemImgListener)
     },
     created() {
       //1.请求多个数据
@@ -97,10 +103,13 @@
     },
     mounted() {
       // 1.监听item中图片加载完成
-      const refresh = debounce(this.$refs.scroll.refresh, 500);
-      this.$bus.$on('itemImageLoad', () => {
-        refresh()
-      })
+      // const refresh = debounce(this.$refs.scroll.refresh, 500);
+      //
+      // // 对监听的事件进行保存
+      // this.itemImgListener = () => {
+      //   refresh()
+      // }
+      // this.$bus.$on('itemImageLoad',this.itemImgListener)
       // 2.获取tabControl的tabOffsetTop   所有组件都有一个$el 属性，用于获取组件中的元素
       // this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop;
     },
