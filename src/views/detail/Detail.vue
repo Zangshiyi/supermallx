@@ -15,6 +15,7 @@
     </scroll>
     <detail-bottom-bar @addToCart="addToCart"></detail-bottom-bar>
     <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
+<!--    <toast :message="message" :show="show"></toast>-->
   </div>
 </template>
 
@@ -37,6 +38,10 @@
   import {debounce} from "../../common/utils";
   import {itemListenerMixin, backTopMixin} from "../../common/mixin";
 
+  import {mapActions} from 'vuex';
+
+  // import Toast from "../../components/common/toast/Toast";
+
 
   export default {
     name: "Detail",
@@ -52,6 +57,7 @@
       DetailRecommendInfo,
       DetailBottomBar,
       BackTop,
+      // Toast,
     },
     mixins: [itemListenerMixin, backTopMixin],
     data() {
@@ -67,6 +73,8 @@
         themeTopYs: [],
         // getThemeTopY:null,
         currentIndex: 0,
+        // message:'',
+        // show:false,
 
       }
     },
@@ -119,6 +127,7 @@
       this.$bus.$off('itemImageLoad', this.itemImgListener)
     },
     methods: {
+      ...mapActions(['addCart']),
       imageLoad() {
         this.$refs.scroll.refresh();
         //根据最新的数据，对应的DOM已经被渲染出来了，但是图片依然没有加载完，（目前获取到的offsetTop不完全包含其中的图片）
@@ -156,12 +165,25 @@
       addToCart() {
         // 1.获取到购物车需要展示的信息添加
         const product = {};
-        product.image = this.topImages[0];
+        product.image = this.topImage[0];
         product.title = this.goods.title;
         product.desc = this.goods.desc;
         product.price = this.goods.realPrice;
         product.iid = this.iid;
         // 2.将商品添加到购物车里面
+        // this.$store.commit('addCart',product)
+        // this.addCart(product).then(res=>{
+        //   console.log(res);
+        // })
+        this.$store.dispatch('addCart',product).then(res=>{
+          // this.show = true;
+          // this.message = res;
+          // setTimeout(()=>{
+          //   this.show = false;
+          //   this.message = '';
+          // },1500)
+          this.$toast.show(res,2000);
+        })
 
       },
     },
@@ -184,6 +206,7 @@
     position: absolute;
     top: 44px;
     bottom: 60px;
+    overflow: hidden;
   }
 
   .detail-nav {
