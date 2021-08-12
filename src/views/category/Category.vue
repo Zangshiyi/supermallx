@@ -2,18 +2,24 @@
   <div id="category">
     <nav-bar class="nav-bar"><div slot="center">商品分类</div></nav-bar>
     <div class="content">
+
       <tab-menu :categories="categories"
                 @selectItem="selectItem"></tab-menu>
-
-      <scroll id="tab-content" :data="[categoryData]">
+      <scroll id="tab-content" :data="[categoryData]"
+              @scroll="contentscroll"
+              ref="scroll"
+              :probe-type="3">
         <div>
+
           <tab-content-category :subcategories="showSubcategory"></tab-content-category>
           <tab-control :titles="['综合', '新品', '销量']"
-                       @tabClick="tabClick"></tab-control>
+                       @tabClick="tabClick"
+                       ref="tabControl2"></tab-control>
           <tab-content-detail :category-detail="showCategoryDetail"></tab-content-detail>
         </div>
       </scroll>
     </div>
+    <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
   </div>
 </template>
 
@@ -25,11 +31,12 @@
   import Scroll from '../../components/common/scroll/Scroll'
   import TabContentCategory from './childComps/TabContentCategory'
   import TabContentDetail from './childComps/TabContentDetail'
+  import BackTop from "../../components/content/backTop/BackTop";
 
   import {getCategory, getSubcategory, getCategoryDetail} from "../../network/category";
   import {POP, SELL, NEW} from "../../common/const";
 
-  import {tabControlMixin} from "../../common/mixin";
+  import {tabControlMixin,backTopMixin} from "../../common/mixin";
 
   export default {
 		name: "Category",
@@ -39,14 +46,16 @@
       TabControl,
       Scroll,
       TabContentCategory,
-      TabContentDetail
+      TabContentDetail,
+      BackTop
     },
-    mixins: [tabControlMixin],
+    mixins: [tabControlMixin,backTopMixin],
     data() {
 		  return {
 		    categories: [],
         categoryData: {},
-        currentIndex: -1
+        currentIndex: -1,
+        isTabFixed: false,
       }
     },
     created() {
@@ -64,6 +73,19 @@
       }
     },
     methods: {
+
+      contentscroll(position) {
+        // 1.判断Backtop是否显示
+        // if (-position.y > 1000) {
+        //   this.isShowBackTop = true;
+        // } else {
+        //   this.isShowBackTop = false;
+        // }
+        // 2.决定tabControl是否吸顶（position：fixed)
+        this.isTabFixed = -position.y > this.tabOffsetTop
+        // 3.是否显示回到顶部
+        this.listenShowBackTop(position)
+      },
 		  _getCategory() {
 		    getCategory().then(res => {
 		      // 1.获取分类数据

@@ -2,9 +2,9 @@
 
 :root {
   --color-text: #666;
-  --color-high-text: #ff5777;
-  --color-tint: #ff8198;
-  --color-background: #fff;
+  --color-high-text: #ffa500;
+  --color-tint: 		#ff69b4;
+  --color-background: #f5fffa;
   --font-size: 14px;
   --line-height: 1.5;
 }
